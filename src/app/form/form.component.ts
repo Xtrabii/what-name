@@ -22,6 +22,8 @@ export class FormComponent {
   // Form Data
   firstName: string = '';
   lastName: string = '';
+  email: string = '';
+  phoneNumber: string = '';
   checkinDate: string = '';
   stayDuration: number = 1;
   checkoutDate: string = '';
@@ -36,9 +38,9 @@ export class FormComponent {
 
   constructor() {
     const housingLocationId = Number(this.route.snapshot.params['id']);
-    this.housingLocation = this.housingService.getHousingLocationById(
-      housingLocationId
-    );
+    this.housingService.getHousingLocationById(housingLocationId).then(housingLoactionId => {
+      this.housingLocation = housingLoactionId;
+    });
   }
 
   // คำนวณวันที่ Check-out
@@ -50,17 +52,38 @@ export class FormComponent {
     }
   }
 
-  // ไปที่หน้าชำระเงิน
-  goToCheckout(): void {
-    if (this.housingLocation) {
-      this.totalPrice = this.stayDuration * this.housingLocation.price;
-      this.vat = this.totalPrice * 0.07;
-      this.grandTotal = this.totalPrice + this.vat;
+  showValidationErrors = false;
 
-      this.showInfoForm = false;
-      this.showCheckoutForm = true;
+  goToCheckout() {
+    this.showValidationErrors = false;
+  
+    if (
+      !this.firstName ||
+      !this.lastName ||
+      !this.email ||
+      !this.phoneNumber ||
+      !this.checkinDate
+    ) {
+      this.showValidationErrors = true;
+      return; // หยุดการทำงานถ้าข้อมูลไม่ครบ
+    }
+
+    // คำนวณราคารวม
+    this.calculatePrices();
+    // ถ้ากรอกข้อมูลครบแล้ว ให้เปลี่ยนไปหน้าชำระเงิน
+    this.showInfoForm = false;
+    this.showCheckoutForm = true;
+  }
+
+  // ฟังก์ชันคำนวณราคารวม
+  calculatePrices(): void {
+    if (this.housingLocation?.price) {
+      this.totalPrice = this.housingLocation.price * this.stayDuration; // คำนวณราคาที่พักทั้งหมด
+      this.vat = parseFloat((this.totalPrice * 0.07).toFixed(2)); // คำนวณ VAT 7%
+      this.grandTotal = this.totalPrice + this.vat; // คำนวณยอดรวมทั้งหมด
     }
   }
+  
 
   // ย้อนกลับไปที่ฟอร์มข้อมูล
   goBackToInfoForm(): void {
@@ -70,7 +93,13 @@ export class FormComponent {
 
   // ชำระเงิน
   pay(): void {
+    if (!this.paymentMethod) {
+      alert('กรุณาเลือกวิธีชำระเงินก่อนดำเนินการชำระเงิน');
+      return; // หยุดการทำงานถ้าไม่ได้เลือกวิธีชำระเงิน
+    }
+
     console.log(`Name: ${this.firstName} ${this.lastName}`);
+    console.log(`Email: ${this.email}`);
     console.log(`Grand Total: ${this.grandTotal} THB`);
 
     alert(`Payment successful! Grand Total: ${this.grandTotal} THB.`);

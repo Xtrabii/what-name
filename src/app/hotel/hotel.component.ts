@@ -17,15 +17,15 @@ import { HousingService } from '../housing.service';
     <br><br>
       <!-- Search Hotel -->
       <div class="input-group rounded col-6">
-        <input type="search " class="form-control rounded" placeholder="Search Hotel" aria-label="Search" aria-describedby="search-addon" />
-        <span class="input-group-text border-0" id="search-addon">
+        <input type="search " class="form-control rounded" placeholder="Search Hotel" aria-label="Search" aria-describedby="search-addon" #filter>
+        <button class="input-group-text border-0" id="search-addon" (click)="filterResults(filter.value)">
           <i class="fas fa-search"></i>
-        </span>
+        </button>
       </div>
     </section>
     <section class="results">
       <app-housing-location 
-      *ngFor="let housingLocation of housingLocationList" 
+      *ngFor="let housingLocation of filteredLocationList" 
       [housingLocation]="housingLocation">
     </app-housing-location>
     </section>
@@ -34,10 +34,25 @@ import { HousingService } from '../housing.service';
   styleUrls: ['./hotel.component.css']
 })
 export class HotelComponent {
-  housingLocationList : Housinglocation[] =[];
-  housingService : HousingService = inject(HousingService);
+  housingLocationList: Housinglocation[] = [];
+  housingService: HousingService = inject(HousingService);
+  filteredLocationList:Housinglocation[] = [];
 
   constructor() {
-    this.housingLocationList = this.housingService.getAllHousingLocations();
+    this.housingService.getAllHousingLocations().then((housingLocationList: Housinglocation[]) => {
+      this.housingLocationList = housingLocationList;
+      this.filteredLocationList = housingLocationList;
+    });
+  }
+
+  filterResults(text: string) {
+    if (!text) {
+      this.filteredLocationList = this.housingLocationList;
+      return;
+    }
+
+    this.filteredLocationList = this.housingLocationList.filter(
+      housingLocation => housingLocation?.name.toLowerCase().includes(text.toLowerCase())
+    );
   }
 }
