@@ -12,13 +12,13 @@ export class HousingService {
   // ดึงข้อมูลทั้งหมด
   async getAllHousingLocations(): Promise<Housinglocation[]> {
     const data = await fetch(this.url);
-    return (await data.json()) ?? [];
+    return await data.json() ?? [];
   }
 
   // ดึงข้อมูลตาม ID
   async getHousingLocationById(id: Number): Promise<Housinglocation | undefined> {
     const data = await fetch(`${this.url}/${id}`);
-    return (await data.json()) ?? {};
+    return await data.json() ?? {};
   }
 
   // เพิ่มข้อมูลใหม่
